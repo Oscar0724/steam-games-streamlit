@@ -17,7 +17,9 @@ def read_single_csv(file_path):
     return res_df
 @st.cache_data
 def load_data():
-    df = pd.read_csv("C:/Users/朱浩政/Documents/TUBerlin/Project/games.csv", index_col=False) 
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, "games.csv")
+    df = pd.read_csv(file_path, index_col = False)
     return df
 df = load_data()
 
