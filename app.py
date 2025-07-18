@@ -9,6 +9,8 @@ import time
 import random
 import os
 import ast
+st.write("开始加载数据")
+
 def read_single_csv(file_path):
     df_chunk = pd.read_csv(file_path, chunksize=1000)
     res_chunk = []
@@ -37,7 +39,8 @@ def load_data():
             df[col] = df[col].apply(lambda x: ", ".join(map(str, x)) if isinstance(x, list) else x)
 
     return df
-    
+st.write("读取csv成功，前5行：", df.head())
+
 columns = df.columns.tolist()
 shift_start = 7  
 new_columns = columns[:shift_start] + [''] + columns[shift_start:]
