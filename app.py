@@ -18,16 +18,25 @@ def read_single_csv(file_path):
     return res_df
 @st.cache_data
 def load_data():
-    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "games.csv"), index_col=False)
+    file_path = os.path.join(os.path.dirname(__file__), "games.csv")
+    df = pd.read_csv(file_path, index_col=None)
+
+    def try_eval(x):
+        if isinstance(x, str) and x.startswith("[") and x.endswith("]"):
+            try:
+                return ast.literal_eval(x)
+            except:
+                return x
+        return x
+
     for col in df.columns:
         if df[col].dtype == "object":
-            try:
-                df[col] = df[col].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) and x.startswith("[") else x)
-            except:
-                pass
+            df[col] = df[col].apply(try_eval)
+
     for col in df.columns:
         if df[col].apply(lambda x: isinstance(x, list)).any():
             df[col] = df[col].apply(lambda x: ", ".join(map(str, x)) if isinstance(x, list) else x)
+
     return df
     
 columns = df.columns.tolist()
