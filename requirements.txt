@@ -1,5 +1,4 @@
 pandas 
 plotly
-streamlit
 matplotlib
 seaborn
