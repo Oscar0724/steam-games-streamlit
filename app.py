@@ -16,7 +16,6 @@ def read_single_csv(file_path):
         res_chunk.append(chunk)
     res_df = pd.concat(res_chunk, ignore_index=True)
     return res_df
-@st.cache_data
 def load_data():
     file_path = os.path.join(os.path.dirname(__file__), "games.csv")
     df = pd.read_csv(file_path, index_col=None)
