@@ -17,9 +17,10 @@ def read_single_csv(file_path):
     return res_df
 @st.cache_data
 def load_data():
-    current_dir = os.path.dirname(__file__)  # 当前脚本所在目录
-    file_path = os.path.join(current_dir, "games.csv")
-    df = pd.read_csv(file_path, index_col = False)
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), "games.csv"), index_col=False)
+    for col in df.columns:
+        if df[col].apply(type).eq(list).any():
+            df[col] = df[col].apply(lambda x: str(x))
     return df
 df = load_data()
 
