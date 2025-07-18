@@ -1,4 +1,4 @@
-pip install -r requirmnets.txt
+!pip install -r requirmnets.txt
 # loading file
 import pandas as pd
 import streamlit as st
