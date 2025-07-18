@@ -352,6 +352,16 @@ def get_fig4_1(df):
 
 @st.cache_data
 def get_fig5(df_filtered):
+    def parse_date_safe(s):
+        try:
+            return pd.to_datetime(s)
+        except:
+            try:
+                return pd.to_datetime(s + ' 1')
+            except:
+                return pd.NaT
+    df['Release date'] = df['Release date'].astype(str).apply(parse_date_safe)
+    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
     df_filtered = df_filtered.copy()
     df_filtered['Release month'] = df_filtered['Release date'].dt.to_period('M').astype(str)
     monthly_counts = df_filtered['Release month'].value_counts().sort_index()
@@ -364,7 +374,6 @@ def get_fig5(df_filtered):
                   markers=True)
     fig5.update_layout(xaxis_tickangle=-45)
     return fig5
-
 #3.6
 
 from collections import Counter
