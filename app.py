@@ -8,9 +8,6 @@ import re
 import time
 import random
 import os
-import ast
-st.write("开始加载数据")
-
 def read_single_csv(file_path):
     df_chunk = pd.read_csv(file_path, chunksize=1000)
     res_chunk = []
@@ -18,28 +15,13 @@ def read_single_csv(file_path):
         res_chunk.append(chunk)
     res_df = pd.concat(res_chunk, ignore_index=True)
     return res_df
+@st.cache_data
 def load_data():
-    file_path = os.path.join(os.path.dirname(__file__), "games.csv")
-    df = pd.read_csv(file_path, index_col=None)
-
-    def try_eval(x):
-        if isinstance(x, str) and x.startswith("[") and x.endswith("]"):
-            try:
-                return ast.literal_eval(x)
-            except:
-                return x
-        return x
-
-    for col in df.columns:
-        if df[col].dtype == "object":
-            df[col] = df[col].apply(try_eval)
-
-    for col in df.columns:
-        if df[col].apply(lambda x: isinstance(x, list)).any():
-            df[col] = df[col].apply(lambda x: ", ".join(map(str, x)) if isinstance(x, list) else x)
-
+    current_dir = os.path.dirname(__file__)  # 当前脚本所在目录
+    file_path = os.path.join(current_dir, "games.csv")
+    df = pd.read_csv(file_path, index_col = False)
     return df
-st.write("读取csv成功，前5行：", df.head())
+df = load_data()
 
 columns = df.columns.tolist()
 shift_start = 7  
