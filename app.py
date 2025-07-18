@@ -772,7 +772,7 @@ elif selected_page == "Steam game player statistics":
     st.pyplot(st.session_state['fig1'])
     st.pyplot(st.session_state['fig1_1'])
 elif selected_page == "Steam game compatibility statistics":
-    st.markdown("# Steam game player statistics")
+    st.markdown("# Steam game compatibility statistics")
     st.pyplot(st.session_state['fig2'])
 elif selected_page == "Top 10 Steam game developers and publishers":
     st.markdown("# Top 10 Steam game developers and publishers")
