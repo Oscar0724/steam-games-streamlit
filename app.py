@@ -8,6 +8,7 @@ import re
 import time
 import random
 import os
+import ast
 def read_single_csv(file_path):
     df_chunk = pd.read_csv(file_path, chunksize=1000)
     res_chunk = []
