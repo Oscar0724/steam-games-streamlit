@@ -19,11 +19,16 @@ def read_single_csv(file_path):
 def load_data():
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), "games.csv"), index_col=False)
     for col in df.columns:
-        if df[col].apply(type).eq(list).any():
-            df[col] = df[col].apply(lambda x: str(x))
+        if df[col].dtype == "object":
+            try:
+                df[col] = df[col].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) and x.startswith("[") else x)
+            except:
+                pass
+    for col in df.columns:
+        if df[col].apply(lambda x: isinstance(x, list)).any():
+            df[col] = df[col].apply(lambda x: ", ".join(map(str, x)) if isinstance(x, list) else x)
     return df
-df = load_data()
-
+    
 columns = df.columns.tolist()
 shift_start = 7  
 new_columns = columns[:shift_start] + [''] + columns[shift_start:]
