@@ -17,7 +17,7 @@ def read_single_csv(file_path):
     return res_df
 @st.cache_data
 def load_data():
-    current_dir = os.path.dirname(__file__)  # 当前脚本所在目录
+    current_dir = os.path.dirname(__file__)
     file_path = os.path.join(current_dir, "games.csv")
     df = pd.read_csv(file_path, index_col = False)
     return df
@@ -351,29 +351,23 @@ def get_fig4_1(df):
 #3.5
 
 @st.cache_data
-def get_fig5(df_filtered):
-    def parse_date_safe(s):
-        try:
-            return pd.to_datetime(s)
-        except:
-            try:
-                return pd.to_datetime(s + ' 1')
-            except:
-                return pd.NaT
-    df['Release date'] = df['Release date'].astype(str).apply(parse_date_safe)
-    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
-    df_filtered = df_filtered.copy()
-    df_filtered['Release month'] = df_filtered['Release date'].dt.to_period('M').astype(str)
-    monthly_counts = df_filtered['Release month'].value_counts().sort_index()
+def get_fig5(df):
+    df = df.copy()
+    df['Release month'] = pd.to_datetime(df['Release date'], errors='coerce').dt.to_period('M').astype(str)
+    monthly_counts = df['Release month'].value_counts().sort_index()
     monthly_df = monthly_counts.reset_index()
     monthly_df.columns = ['Month', 'Game Count']
-
-    fig5 = px.line(monthly_df, x='Month', y='Game Count',
-                  title='Monthly Game Release Count',
-                  labels={'Month': 'Release Month', 'Game Count': 'Number of Games'},
-                  markers=True)
+    fig5 = px.line(
+        monthly_df,
+        x='Month',
+        y='Game Count',
+        title='Monthly Game Release Count',
+        labels={'Month': 'Release Month', 'Game Count': 'Number of Games'},
+        markers=True
+    )
     fig5.update_layout(xaxis_tickangle=-45)
     return fig5
+
 #3.6
 
 from collections import Counter
@@ -793,21 +787,17 @@ elif selected_page == "Steam game price statistics":
 elif selected_page == "Steam game release time statistics":
     st.markdown("# Steam game release time statistics")
     df['Release date'] = pd.to_datetime(df['Release date'], errors='coerce')
-    all_months = df['Release date'].dt.to_period('M').dropna().sort_values().unique()
-    all_months = all_months.astype(str).tolist()
+    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
+    all_months = df['Release month'].dropna().sort_values().unique().tolist()
     default_start = all_months[0]
     default_end = all_months[-1]
     selected_range = st.select_slider(
         "Select release month range",
-        options=all_months,
-        value=(default_start, default_end),
-        format_func=lambda x: x
+       options=all_months,
+        value=(default_start, default_end)
     )
-
     start_month, end_month = selected_range
-    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
     filtered_df = df[(df['Release month'] >= start_month) & (df['Release month'] <= end_month)]
-
     fig5 = get_fig5(filtered_df)
     st.plotly_chart(fig5)
 elif selected_page == "Steam games support language and voice statistics":
