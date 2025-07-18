@@ -28,6 +28,7 @@ shift_start = 7
 new_columns = columns[:shift_start] + [''] + columns[shift_start:]
 df.columns = pd.Index(new_columns[:len(df.columns)])
 df.drop(df.columns[7], axis=1, inplace=True)
+df_copy = df.copy()
 df = df.drop('Screenshots', axis = 1)
 df = df.drop('Header image', axis = 1)
 df = df.drop('Website', axis = 1)
@@ -349,21 +350,14 @@ def get_fig4_1(df):
 
 #3.5
 
-@st.cache_resource
-def get_fig5(df):
-    def parse_date_safe(s):
-        try:
-            return pd.to_datetime(s)
-        except:
-            try:
-                return pd.to_datetime(s + ' 1')
-            except:
-                return pd.NaT
-    df['Release date'] = df['Release date'].astype(str).apply(parse_date_safe)
-    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
-    monthly_counts = df['Release month'].value_counts().sort_index()
+@st.cache_data
+def get_fig5(df_filtered):
+    df_filtered = df_filtered.copy()
+    df_filtered['Release month'] = df_filtered['Release date'].dt.to_period('M').astype(str)
+    monthly_counts = df_filtered['Release month'].value_counts().sort_index()
     monthly_df = monthly_counts.reset_index()
     monthly_df.columns = ['Month', 'Game Count']
+
     fig5 = px.line(monthly_df, x='Month', y='Game Count',
                   title='Monthly Game Release Count',
                   labels={'Month': 'Release Month', 'Game Count': 'Number of Games'},
@@ -766,6 +760,9 @@ if selected_page == "Home":
         **🏢 Publishers:** {row['Publishers']}  
         ---  
         """)
+    st.markdown('Raw data')
+    st.dataframe(df_base)
+    st.write(f"data has {df.shape[0]} lines，{df.shape[1]} columns")
         
 elif selected_page == "Steam game player statistics":
     st.markdown("# Steam game player statistics")
@@ -786,7 +783,24 @@ elif selected_page == "Steam game price statistics":
     st.pyplot(st.session_state['fig4_1'])
 elif selected_page == "Steam game release time statistics":
     st.markdown("# Steam game release time statistics")
-    st.plotly_chart(st.session_state['fig5'])
+    df['Release date'] = pd.to_datetime(df['Release date'], errors='coerce')
+    all_months = df['Release date'].dt.to_period('M').dropna().sort_values().unique()
+    all_months = all_months.astype(str).tolist()
+    default_start = all_months[0]
+    default_end = all_months[-1]
+    selected_range = st.select_slider(
+        "Select release month range",
+        options=all_months,
+        value=(default_start, default_end),
+        format_func=lambda x: x
+    )
+
+    start_month, end_month = selected_range
+    df['Release month'] = df['Release date'].dt.to_period('M').astype(str)
+    filtered_df = df[(df['Release month'] >= start_month) & (df['Release month'] <= end_month)]
+
+    fig5 = get_fig5(filtered_df)
+    st.plotly_chart(fig5)
 elif selected_page == "Steam games support language and voice statistics":
     st.markdown("# Steam games support language and voice statistics")
     st.pyplot(st.session_state['fig6'])
